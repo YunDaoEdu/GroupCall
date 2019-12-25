@@ -1,0 +1,44 @@
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <meta content="IE=edge" http-equiv="X-UA-Compatible">
+    <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
+
+    <title>风筝</title>
+
+    <link href="/css/style.css" media="screen" rel="styleSheet" type="text/css">
+</head>
+<body>
+
+<div id="container">
+    <div id="wrapper">
+        <div class="animate join" id="join">
+            <h1>Join a Room</h1>
+            <form accept-charset="UTF-8" onsubmit="register(); return false;">
+                <p>
+                    <input id="name" name="name" placeholder="Username" required type="text" value="">
+                </p>
+                <p>
+                    <input id="roomName" name="room" placeholder="Room" required type="text" value="">
+                </p>
+                <p class="submit">
+                    <input name="commit" type="submit" value="Join!">
+                </p>
+            </form>
+        </div>
+        <div id="room" style="display: none;">
+            <h2 id="room-header"></h2>
+            <div id="participants"></div>
+            <input id="button-leave" onmouseup="leaveRoom();" type="button" value="Leave room">
+        </div>
+    </div>
+</div>
+
+<script charset="UTF-8" src="/js/js_lib/jquery-3.4.1.min.js"></script>
+<script charset="UTF-8" src="/js/js_lib/bootstrap.bundle.min.js"></script>
+<script charset="UTF-8" src="/js/js_lib/kurento-utils.js"></script>
+<script charset="UTF-8" src="/js/js_lib/vconsole.min.js"></script>
+<script charset="UTF-8" src="/js/participant.js"></script>
+<script charset="UTF-8" src="/js/conferenceroom.js"></script>
+</body>
+</html>
