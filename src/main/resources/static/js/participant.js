@@ -4,9 +4,11 @@ const PARTICIPANT_CLASS = 'participant';
 
 function Participant(name) {
     this.name = name;
+
     let container = document.createElement('div');
     container.className = isPresentMainParticipant() ? PARTICIPANT_CLASS : PARTICIPANT_MAIN_CLASS;
     container.id = name;
+
     let span = document.createElement('span');
     let video = document.createElement('video');
 
@@ -43,7 +45,7 @@ function Participant(name) {
         return ((document.getElementsByClassName(PARTICIPANT_MAIN_CLASS)).length !== 0);
     }
 
-    this.offerToReceiveVideo = function (error, offerSdp, wp) {
+    this.offerToReceiveVideo = function (error, offerSdp) {
         if (error) {
             console.error("sdp offer error");
             console.log('Invoking SDP offer callback function');
@@ -55,11 +57,11 @@ function Participant(name) {
             sender: name,
             sdpOffer: offerSdp
         };
-        sendMessage(msg);
+        $.fn.sendMessage(msg);
     };
 
 
-    this.onIceCandidate = function (candidate, wp) {
+    this.onIceCandidate = function (candidate) {
         console.log("Local candidate" + JSON.stringify(candidate));
 
         let message = {
@@ -67,7 +69,7 @@ function Participant(name) {
             candidate: candidate,
             name: name
         };
-        sendMessage(message);
+        $.fn.sendMessage(message);
     };
 
     Object.defineProperty(this, 'rtcPeer', {writable: true});

@@ -12,9 +12,7 @@ import org.springframework.web.socket.WebSocketSession;
 import javax.annotation.PreDestroy;
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -26,53 +24,62 @@ public class Room implements Closeable {
     private final MediaPipeline pipeline;
     private final String name;
 
+
     public Room(String roomName, MediaPipeline pipeline) {
         this.name = roomName;
         this.pipeline = pipeline;
     }
 
-    public String getName() {
-        return name;
-    }
 
-    @PreDestroy
-    private void shutdown() {
-        this.close();
-    }
-
+    /**
+     * 用户加入房间
+     */
     public UserSession join(String userName, WebSocketSession session) throws IOException {
         final UserSession participant = new UserSession(userName, this.name, session, this.pipeline);
+
         joinRoom(participant);
+
         participants.put(participant.getName(), participant);
+
         sendParticipantNames(participant);
+
         return participant;
     }
 
+
+    /**
+     * 用户离开房间
+     */
     public void leave(UserSession user) throws IOException {
         this.removeParticipant(user.getName());
         user.close();
     }
 
-    private Collection<String> joinRoom(UserSession newParticipant) throws IOException {
+
+    /**
+     * 通知客户端有新成员加入
+     */
+    private void joinRoom(UserSession newParticipant) {
         final JsonObject newParticipantMsg = new JsonObject();
         newParticipantMsg.addProperty("id", "newParticipantArrived");
         newParticipantMsg.addProperty("name", newParticipant.getName());
 
-        final List<String> participantsList = new ArrayList<>(participants.values().size());
 
         for (final UserSession participant : participants.values()) {
             try {
                 participant.sendMessage(newParticipantMsg);
             } catch (final IOException e) {
-                log.debug("ROOM {}: participant {} could not be notified", name, participant.getName(), e);
+                log.debug("房间 {}: 的成员 {} 未收到用户加入的通知", name, participant.getName(), e);
             }
-            participantsList.add(participant.getName());
         }
 
-        return participantsList;
     }
 
-    private void removeParticipant(String name) throws IOException {
+
+    /**
+     * 用户离开房间，从房间成员里移除用户
+     */
+    private void removeParticipant(String name) {
         participants.remove(name);
 
         final JsonObject participantLeftJson = new JsonObject();
@@ -89,6 +96,10 @@ public class Room implements Closeable {
 
     }
 
+
+    /**
+     * 通知客户端房间现在成员名称
+     */
     public void sendParticipantNames(UserSession user) throws IOException {
 
         final JsonArray participantsArray = new JsonArray();
@@ -105,12 +116,22 @@ public class Room implements Closeable {
         user.sendMessage(existingParticipantsMsg);
     }
 
+
+    /**
+     * 获取房间所有成员姓名
+     */
     public Collection<UserSession> getParticipants() {
         return participants.values();
     }
 
-    public UserSession getParticipant(String name) {
-        return participants.get(name);
+
+    public String getName() {
+        return name;
+    }
+
+    @PreDestroy
+    private void shutdown() {
+        this.close();
     }
 
     @Override

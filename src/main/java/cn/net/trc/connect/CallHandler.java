@@ -23,6 +23,7 @@ public class CallHandler extends TextWebSocketHandler {
     @Autowired
     private UserRegistry registry;
 
+
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         final JsonObject jsonMessage = gson.fromJson(message.getPayload(), JsonObject.class);
@@ -56,11 +57,13 @@ public class CallHandler extends TextWebSocketHandler {
         }
     }
 
+
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         UserSession user = registry.removeBySession(session);
         roomManager.getRoom(user.getRoomName()).leave(user);
     }
+
 
     private void joinRoom(JsonObject params, WebSocketSession session) throws IOException {
         final String roomName = params.get("room").getAsString();
@@ -70,6 +73,7 @@ public class CallHandler extends TextWebSocketHandler {
         final UserSession user = room.join(name, session);
         registry.register(user);
     }
+
 
     private void leaveRoom(UserSession user) throws IOException {
         final Room room = roomManager.getRoom(user.getRoomName());

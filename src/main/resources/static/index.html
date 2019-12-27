@@ -13,23 +13,24 @@
 <div id="container">
     <div id="wrapper">
         <div class="animate join" id="join">
-            <h1>Join a Room</h1>
-            <form accept-charset="UTF-8" onsubmit="register(); return false;">
-                <p>
-                    <input id="name" name="name" placeholder="Username" required type="text" value="">
-                </p>
-                <p>
-                    <input id="roomName" name="room" placeholder="Room" required type="text" value="">
-                </p>
-                <p class="submit">
-                    <input name="commit" type="submit" value="Join!">
-                </p>
-            </form>
+            <h1>加入房间</h1>
+            <p>
+                <label for="name"></label>
+                <input id="name" name="name" placeholder="Username" required type="text" value="">
+            </p>
+            <p>
+                <label for="roomName"></label>
+                <input id="roomName" name="room" placeholder="Room" required type="text" value="">
+            </p>
+            <p class="submit">
+                <input id="commit" type="button" value="注册!">
+            </p>
         </div>
+
         <div id="room" style="display: none;">
             <h2 id="room-header"></h2>
             <div id="participants"></div>
-            <input id="button-leave" onmouseup="leaveRoom();" type="button" value="Leave room">
+            <input id="button-leave" type="button" value="离开">
         </div>
     </div>
 </div>

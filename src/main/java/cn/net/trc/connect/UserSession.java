@@ -23,16 +23,15 @@ public class UserSession implements Closeable {
     private static final Logger log = LoggerFactory.getLogger(UserSession.class);
 
     private final String name;
-    private final WebSocketSession session;
-
-    private final MediaPipeline pipeline;
-
     private final String roomName;
+
+    private final WebSocketSession session;
+    private final MediaPipeline pipeline;
     private final WebRtcEndpoint outgoingMedia;
+
     private final ConcurrentMap<String, WebRtcEndpoint> incomingMedia = new ConcurrentHashMap<>();
 
-    public UserSession(final String name, String roomName, final WebSocketSession session,
-                       MediaPipeline pipeline) {
+    public UserSession(final String name, String roomName, final WebSocketSession session, MediaPipeline pipeline) {
 
         this.pipeline = pipeline;
         this.name = name;
@@ -59,23 +58,10 @@ public class UserSession implements Closeable {
         });
     }
 
-    public WebRtcEndpoint getOutgoingWebRtcPeer() {
-        return outgoingMedia;
-    }
 
-    public String getName() {
-        return name;
-    }
-
-    public WebSocketSession getSession() {
-        return session;
-    }
-
-
-    public String getRoomName() {
-        return this.roomName;
-    }
-
+    /**
+     * 从某用户处接收视频
+     */
     public void receiveVideoFrom(UserSession sender, String sdpOffer) throws IOException {
         final String ipSdpAnswer = this.getEndpointForUser(sender).processOffer(sdpOffer);
         final JsonObject scParams = new JsonObject();
@@ -87,12 +73,18 @@ public class UserSession implements Closeable {
         this.getEndpointForUser(sender).gatherCandidates();
     }
 
+
+    /**
+     * 为某用户获取EndPoint
+     */
     private WebRtcEndpoint getEndpointForUser(final UserSession sender) {
-        if (sender.getName().equals(name)) {
+        final String senderName = sender.getName();
+
+        if (senderName.equals(name)) {
             return outgoingMedia;
         }
 
-        WebRtcEndpoint incoming = incomingMedia.get(sender.getName());
+        WebRtcEndpoint incoming = incomingMedia.get(senderName);
         if (incoming == null) {
             incoming = new WebRtcEndpoint.Builder(pipeline).build();
 
@@ -102,7 +94,7 @@ public class UserSession implements Closeable {
                 public void onEvent(IceCandidateFoundEvent event) {
                     JsonObject response = new JsonObject();
                     response.addProperty("id", "iceCandidate");
-                    response.addProperty("name", sender.getName());
+                    response.addProperty("name", senderName);
                     response.add("candidate", JsonUtils.toJsonObject(event.getCandidate()));
                     try {
                         synchronized (session) {
@@ -121,33 +113,20 @@ public class UserSession implements Closeable {
         return incoming;
     }
 
-    public void cancelVideoFrom(final UserSession sender) {
-        this.cancelVideoFrom(sender.getName());
-    }
 
+    /**
+     * 取消从某用户接收视频
+     */
     public void cancelVideoFrom(final String senderName) {
         final WebRtcEndpoint incoming = incomingMedia.remove(senderName);
 
         incoming.release();
     }
 
-    @Override
-    public void close() throws IOException {
-        for (final String remoteParticipantName : incomingMedia.keySet()) {
-            final WebRtcEndpoint ep = this.incomingMedia.get(remoteParticipantName);
 
-            ep.release();
-        }
-
-        outgoingMedia.release();
-    }
-
-    public void sendMessage(JsonObject message) throws IOException {
-        synchronized (session) {
-            session.sendMessage(new TextMessage(message.toString()));
-        }
-    }
-
+    /**
+     * 添加IceCandidate
+     */
     public void addCandidate(IceCandidate candidate, String name) {
         if (this.name.compareTo(name) == 0) {
             outgoingMedia.addIceCandidate(candidate);
@@ -159,11 +138,46 @@ public class UserSession implements Closeable {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.lang.Object#equals(java.lang.Object)
+
+    /**
+     * 发送信息至客户端
      */
+    public void sendMessage(JsonObject message) throws IOException {
+        synchronized (session) {
+            session.sendMessage(new TextMessage(message.toString()));
+        }
+    }
+
+
+    public WebRtcEndpoint getOutgoingWebRtcPeer() {
+        return outgoingMedia;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public WebSocketSession getSession() {
+        return session;
+    }
+
+
+    public String getRoomName() {
+        return this.roomName;
+    }
+
+
+    @Override
+    public void close() throws IOException {
+        for (final String remoteParticipantName : incomingMedia.keySet()) {
+            final WebRtcEndpoint ep = this.incomingMedia.get(remoteParticipantName);
+            ep.release();
+        }
+
+        outgoingMedia.release();
+    }
+
+
     @Override
     public boolean equals(Object obj) {
 
@@ -179,11 +193,7 @@ public class UserSession implements Closeable {
         return eq;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.lang.Object#hashCode()
-     */
+
     @Override
     public int hashCode() {
         int result = 1;
