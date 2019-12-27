@@ -39,23 +39,7 @@ public class UserSession implements Closeable {
         this.roomName = roomName;
         this.outgoingMedia = new WebRtcEndpoint.Builder(pipeline).build();
 
-        this.outgoingMedia.addIceCandidateFoundListener(new EventListener<IceCandidateFoundEvent>() {
-
-            @Override
-            public void onEvent(IceCandidateFoundEvent event) {
-                JsonObject response = new JsonObject();
-                response.addProperty("id", "iceCandidate");
-                response.addProperty("name", name);
-                response.add("candidate", JsonUtils.toJsonObject(event.getCandidate()));
-                try {
-                    synchronized (session) {
-                        session.sendMessage(new TextMessage(response.toString()));
-                    }
-                } catch (IOException e) {
-                    log.debug(e.getMessage());
-                }
-            }
-        });
+        this.outgoingMedia.addIceCandidateFoundListener(new MyIceFoundListener(session, name));
     }
 
 
@@ -88,23 +72,7 @@ public class UserSession implements Closeable {
         if (incoming == null) {
             incoming = new WebRtcEndpoint.Builder(pipeline).build();
 
-            incoming.addIceCandidateFoundListener(new EventListener<IceCandidateFoundEvent>() {
-
-                @Override
-                public void onEvent(IceCandidateFoundEvent event) {
-                    JsonObject response = new JsonObject();
-                    response.addProperty("id", "iceCandidate");
-                    response.addProperty("name", senderName);
-                    response.add("candidate", JsonUtils.toJsonObject(event.getCandidate()));
-                    try {
-                        synchronized (session) {
-                            session.sendMessage(new TextMessage(response.toString()));
-                        }
-                    } catch (IOException e) {
-                        log.debug(e.getMessage());
-                    }
-                }
-            });
+            incoming.addIceCandidateFoundListener(new MyIceFoundListener(this.session, senderName));
 
             incomingMedia.put(sender.getName(), incoming);
         }
@@ -145,6 +113,37 @@ public class UserSession implements Closeable {
     public void sendMessage(JsonObject message) throws IOException {
         synchronized (session) {
             session.sendMessage(new TextMessage(message.toString()));
+        }
+    }
+
+
+    /**
+     * Ice查找监听
+     */
+    private static class MyIceFoundListener implements EventListener<IceCandidateFoundEvent> {
+        private final WebSocketSession session;
+        private final String senderName;
+
+
+        public MyIceFoundListener(WebSocketSession session, String senderName) {
+            this.session = session;
+            this.senderName = senderName;
+        }
+
+        @Override
+        public void onEvent(IceCandidateFoundEvent event) {
+            JsonObject response = new JsonObject();
+            response.addProperty("id", "iceCandidate");
+            response.addProperty("name", senderName);
+            response.add("candidate", JsonUtils.toJsonObject(event.getCandidate()));
+
+            try {
+                synchronized (session) {
+                    session.sendMessage(new TextMessage(response.toString()));
+                }
+            } catch (IOException e) {
+                log.error(e.toString());
+            }
         }
     }
 
