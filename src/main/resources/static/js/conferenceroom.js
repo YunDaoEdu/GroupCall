@@ -45,22 +45,8 @@
     /**
      * 用户注册
      */
-    document.getElementById("commit").onclick = register;
-
     function register() {
-        name = document.getElementById('name').value;
-        let room = document.getElementById('roomName').value;
-
-        document.getElementById('room-header').innerText = 'ROOM ' + room;
-        document.getElementById('join').style.display = 'none';
-        document.getElementById('room').style.display = 'block';
-
-        let message = {
-            id: 'joinRoom',
-            name: name,
-            room: room,
-        };
-        sendMessage(message);
+        sendMessage({id: "joinRoom"});
     }
 
 
@@ -186,5 +172,13 @@
 
     window.onbeforeunload = function () {
         ws.close();
+    };
+
+
+    /**
+     * 当连接建立时，开始注册
+     */
+    ws.onopen = function () {
+        register();
     };
 })();

@@ -4,6 +4,7 @@ import cn.net.trc.connect.pojo.Room;
 import cn.net.trc.connect.pojo.RoomManager;
 import cn.net.trc.connect.pojo.UserRegistry;
 import cn.net.trc.connect.pojo.UserSession;
+import cn.net.trc.pojo.UserInfo;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
@@ -15,6 +16,7 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
+import java.util.Map;
 
 
 public class CallHandler extends TextWebSocketHandler {
@@ -32,11 +34,18 @@ public class CallHandler extends TextWebSocketHandler {
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         final JsonObject jsonMessage = gson.fromJson(message.getPayload(), JsonObject.class);
 
-        final UserSession user = registry.getBySession(session);
+        //final UserSession user = registry.getBySession(session);
+
+
+        final Map<String, Object> attributes = session.getAttributes();
+        final UserInfo userInfo = (UserInfo) attributes.get("UserInfo");
+        final String userName = userInfo.getUserName();
+        final String roomName = userInfo.getUserRoom();
+        final UserSession user = roomManager.getRoom(roomName).getUserSession(userName);
 
         switch (jsonMessage.get("id").getAsString()) {
             case "joinRoom":
-                joinRoom(jsonMessage, session);
+                joinRoom(userName, roomName, session);
                 break;
             case "receiveVideoFrom":
                 final String senderName = jsonMessage.get("sender").getAsString();
@@ -69,12 +78,9 @@ public class CallHandler extends TextWebSocketHandler {
     }
 
 
-    private void joinRoom(JsonObject params, WebSocketSession session) throws IOException {
-        final String roomName = params.get("room").getAsString();
-        final String name = params.get("name").getAsString();
-
+    private void joinRoom(String userName, String roomName, WebSocketSession session) throws IOException {
         Room room = roomManager.getRoom(roomName);
-        final UserSession user = room.join(name, session);
+        final UserSession user = room.join(userName, session);
         registry.register(user);
     }
 

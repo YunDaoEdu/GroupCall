@@ -3,6 +3,7 @@ package cn.net.trc;
 import cn.net.trc.connect.CallHandler;
 import cn.net.trc.connect.pojo.RoomManager;
 import cn.net.trc.connect.pojo.UserRegistry;
+import cn.net.trc.interceptor.WebSocketInterceptor;
 import org.kurento.client.KurentoClient;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -49,7 +50,8 @@ public class WebRtcApplication implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(groupCallHandler(), "/groupcall");
+        registry.addHandler(groupCallHandler(), "/groupcall")
+                .addInterceptors(new WebSocketInterceptor());
     }
 
 }

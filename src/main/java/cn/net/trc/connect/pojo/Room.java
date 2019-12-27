@@ -127,6 +127,14 @@ public class Room implements Closeable {
     }
 
 
+    /**
+     * 获取某一位成员的UserSession
+     */
+    public UserSession getUserSession(String userName) {
+        return participants.get(userName);
+    }
+
+
     public String getName() {
         return name;
     }
