@@ -1,4 +1,4 @@
-package cn.net.trc.connect;
+package cn.net.trc.connect.pojo;
 
 import com.google.gson.JsonObject;
 import org.kurento.client.EventListener;

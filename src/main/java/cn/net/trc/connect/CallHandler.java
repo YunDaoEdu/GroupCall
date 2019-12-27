@@ -1,5 +1,9 @@
 package cn.net.trc.connect;
 
+import cn.net.trc.connect.pojo.Room;
+import cn.net.trc.connect.pojo.RoomManager;
+import cn.net.trc.connect.pojo.UserRegistry;
+import cn.net.trc.connect.pojo.UserSession;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;

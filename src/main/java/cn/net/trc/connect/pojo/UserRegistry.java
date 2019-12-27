@@ -1,4 +1,4 @@
-package cn.net.trc.connect;
+package cn.net.trc.connect.pojo;
 
 import org.springframework.web.socket.WebSocketSession;
 

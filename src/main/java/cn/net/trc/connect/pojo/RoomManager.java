@@ -1,4 +1,4 @@
-package cn.net.trc.connect;
+package cn.net.trc.connect.pojo;
 
 import org.kurento.client.KurentoClient;
 import org.springframework.beans.factory.annotation.Autowired;

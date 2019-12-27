@@ -1,4 +1,4 @@
-package cn.net.trc.connect;
+package cn.net.trc.connect.pojo;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -37,10 +37,12 @@ public class Room implements Closeable {
     public UserSession join(String userName, WebSocketSession session) throws IOException {
         final UserSession participant = new UserSession(userName, this.name, session, this.pipeline);
 
+        // 通知所有成员新用户加入 (newParticipantArrived)
         joinRoom(participant);
 
         participants.put(participant.getName(), participant);
 
+        // 通知除新成员外的所有成员该房间成员名单 (existingParticipants)
         sendParticipantNames(participant);
 
         return participant;

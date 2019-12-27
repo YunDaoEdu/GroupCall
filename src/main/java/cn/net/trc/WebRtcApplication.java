@@ -1,8 +1,8 @@
 package cn.net.trc;
 
 import cn.net.trc.connect.CallHandler;
-import cn.net.trc.connect.RoomManager;
-import cn.net.trc.connect.UserRegistry;
+import cn.net.trc.connect.pojo.RoomManager;
+import cn.net.trc.connect.pojo.UserRegistry;
 import org.kurento.client.KurentoClient;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

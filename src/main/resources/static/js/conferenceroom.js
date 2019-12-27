@@ -123,6 +123,7 @@
      * 接收某个用户的视频
      */
     function receiveVideo(sender) {
+
         let participant = new Participant(sender);
         participants[sender] = participant;
         let video = participant.getVideoElement();
