@@ -72,4 +72,22 @@ public class BasicController {
         replyMessage.setStatus(200);
         return replyMessage;
     }
+
+
+    @PostMapping("/exit")
+    @ResponseBody
+    public ReplyMessage userExit(boolean isExit, HttpServletRequest request) {
+        ReplyMessage replyMessage = new ReplyMessage();
+
+        if (isExit) {
+            HttpSession session = request.getSession();
+            session.removeAttribute("UserInfo");
+
+            replyMessage.setStatus(200);
+        } else {
+            replyMessage.setStatus(400);
+        }
+
+        return replyMessage;
+    }
 }

@@ -155,10 +155,26 @@
             participants[key].dispose();
         }
 
-        document.getElementById('join').style.display = 'block';
-        document.getElementById('room').style.display = 'none';
-
         ws.close();
+
+        $.ajax({
+            url: "/exit",
+            type: "post",
+            dataType: "json",
+            data: {"isExit": true},
+            success: function (result) {
+                if ((typeof result) === "object") {
+                    if (result.status === 200) {
+                        return window.location.href = "/";
+                    }
+                }
+
+                alert("退出房间失败！");
+            },
+            error: function (jqXHR) {
+                alert(jqXHR.status);
+            }
+        });
     }
 
 
