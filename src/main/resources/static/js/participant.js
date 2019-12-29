@@ -62,7 +62,7 @@ function Participant(name) {
 
 
     this.onIceCandidate = function (candidate) {
-        console.log("Local candidate" + JSON.stringify(candidate));
+        //console.log("Local candidate" + JSON.stringify(candidate));
 
         let message = {
             id: 'onIceCandidate',

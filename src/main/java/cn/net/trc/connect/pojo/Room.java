@@ -37,12 +37,12 @@ public class Room implements Closeable {
     public UserSession join(String userName, WebSocketSession session) throws IOException {
         final UserSession participant = new UserSession(userName, this.name, session, this.pipeline);
 
-        // 通知所有成员新用户加入 (newParticipantArrived)
+        // 通知所有老用户有新用户加入 (newParticipantArrived)
         joinRoom(participant);
 
         participants.put(participant.getName(), participant);
 
-        // 通知除新成员外的所有成员该房间成员名单 (existingParticipants)
+        // 通知该新用户该房间现在的成员名单 (existingParticipants)
         sendParticipantNames(participant);
 
         return participant;
@@ -114,6 +114,7 @@ public class Room implements Closeable {
 
         final JsonObject existingParticipantsMsg = new JsonObject();
         existingParticipantsMsg.addProperty("id", "existingParticipants");
+        existingParticipantsMsg.addProperty("name", user.getName());
         existingParticipantsMsg.add("data", participantsArray);
         user.sendMessage(existingParticipantsMsg);
     }

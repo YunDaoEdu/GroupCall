@@ -34,24 +34,15 @@ public class CallHandler extends TextWebSocketHandler {
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         final JsonObject jsonMessage = gson.fromJson(message.getPayload(), JsonObject.class);
 
-        //final UserSession user = registry.getBySession(session);
-
-
-        final Map<String, Object> attributes = session.getAttributes();
-        final UserInfo userInfo = (UserInfo) attributes.get("UserInfo");
-        final String userName = userInfo.getUserName();
-        final String roomName = userInfo.getUserRoom();
-        final UserSession user = roomManager.getRoom(roomName).getUserSession(userName);
+        final UserSession user = registry.getBySession(session);
 
         switch (jsonMessage.get("id").getAsString()) {
             case "joinRoom":
-                joinRoom(userName, roomName, session);
+                joinRoom(session);
                 break;
             case "receiveVideoFrom":
-                final String senderName = jsonMessage.get("sender").getAsString();
-                final UserSession sender = registry.getByName(senderName);
                 final String sdpOffer = jsonMessage.get("sdpOffer").getAsString();
-                user.receiveVideoFrom(sender, sdpOffer);
+                user.receiveVideoFrom(user, sdpOffer);
                 break;
             case "leaveRoom":
                 leaveRoom(user);
@@ -60,9 +51,11 @@ public class CallHandler extends TextWebSocketHandler {
                 JsonObject candidate = jsonMessage.get("candidate").getAsJsonObject();
 
                 if (user != null) {
+                    final String userName = user.getName();
+
                     IceCandidate cand = new IceCandidate(candidate.get("candidate").getAsString(),
                             candidate.get("sdpMid").getAsString(), candidate.get("sdpMLineIndex").getAsInt());
-                    user.addCandidate(cand, jsonMessage.get("name").getAsString());
+                    user.addCandidate(cand, userName);
                 }
                 break;
             default:
@@ -78,7 +71,12 @@ public class CallHandler extends TextWebSocketHandler {
     }
 
 
-    private void joinRoom(String userName, String roomName, WebSocketSession session) throws IOException {
+    private void joinRoom(WebSocketSession session) throws IOException {
+        final Map<String, Object> attributes = session.getAttributes();
+        final UserInfo userInfo = (UserInfo) attributes.get("UserInfo");
+        final String userName = userInfo.getUserName();
+        final String roomName = userInfo.getUserRoom();
+
         Room room = roomManager.getRoom(roomName);
         final UserSession user = room.join(userName, session);
         registry.register(user);

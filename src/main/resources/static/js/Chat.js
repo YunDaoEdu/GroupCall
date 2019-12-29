@@ -16,6 +16,8 @@
     ws.onmessage = function (message) {
         let parsedMessage = JSON.parse(message.data);
 
+        console.warn("接收到的信息:" + parsedMessage.id);
+
         switch (parsedMessage.id) {
             case 'existingParticipants':
                 onExistingParticipants(parsedMessage);
@@ -65,8 +67,14 @@
             }
         };
 
+        name = msg.name;
+
         let participant = new Participant(name);
         participants[name] = participant;
+
+        console.warn("成员现况");
+        console.warn(participants);
+
         let video = participant.getVideoElement();
 
         let options = {
@@ -112,6 +120,10 @@
 
         let participant = new Participant(sender);
         participants[sender] = participant;
+
+        console.warn("成员现况");
+        console.warn(participants);
+
         let video = participant.getVideoElement();
 
         let options = {
