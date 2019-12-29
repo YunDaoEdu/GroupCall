@@ -37,13 +37,9 @@ public class Room implements Closeable {
     public UserSession join(String userName, WebSocketSession session) throws IOException {
         final UserSession participant = new UserSession(userName, this.name, session, this.pipeline);
 
-        // 通知所有老用户有新用户加入 (newParticipantArrived)
         joinRoom(participant);
 
         participants.put(participant.getName(), participant);
-
-        // 通知该新用户该房间现在的成员名单 (existingParticipants)
-        sendParticipantNames(participant);
 
         return participant;
     }
@@ -61,20 +57,31 @@ public class Room implements Closeable {
     /**
      * 通知客户端有新成员加入
      */
-    private void joinRoom(UserSession newParticipant) {
+    private void joinRoom(UserSession newParticipant) throws IOException {
+        // 新用户加入通知
         final JsonObject newParticipantMsg = new JsonObject();
         newParticipantMsg.addProperty("id", "newParticipantArrived");
         newParticipantMsg.addProperty("name", newParticipant.getName());
 
+        // 房间成员名单通知
+        final JsonArray participantsArray = new JsonArray();
 
         for (final UserSession participant : participants.values()) {
-            try {
-                participant.sendMessage(newParticipantMsg);
-            } catch (final IOException e) {
-                log.debug("房间 {}: 的成员 {} 未收到用户加入的通知", name, participant.getName(), e);
-            }
+            // 遍历老用户，通知老用户有新成员加入
+            participant.sendMessage(newParticipantMsg);
+
+            // 将老用户的名单组成数组
+            final JsonElement participantName = new JsonPrimitive(participant.getName());
+            participantsArray.add(participantName);
         }
 
+
+        // 通知新成员该房间现在的成员名单
+        final JsonObject existingParticipantsMsg = new JsonObject();
+        existingParticipantsMsg.addProperty("id", "existingParticipants");
+        existingParticipantsMsg.addProperty("name", newParticipant.getName());
+        existingParticipantsMsg.add("data", participantsArray);
+        newParticipant.sendMessage(existingParticipantsMsg);
     }
 
 
@@ -99,26 +106,6 @@ public class Room implements Closeable {
     }
 
 
-    /**
-     * 通知客户端房间现在成员名称
-     */
-    public void sendParticipantNames(UserSession user) throws IOException {
-
-        final JsonArray participantsArray = new JsonArray();
-        for (final UserSession participant : this.getParticipants()) {
-            if (!participant.equals(user)) {
-                final JsonElement participantName = new JsonPrimitive(participant.getName());
-                participantsArray.add(participantName);
-            }
-        }
-
-        final JsonObject existingParticipantsMsg = new JsonObject();
-        existingParticipantsMsg.addProperty("id", "existingParticipants");
-        existingParticipantsMsg.addProperty("name", user.getName());
-        existingParticipantsMsg.add("data", participantsArray);
-        user.sendMessage(existingParticipantsMsg);
-    }
-
 
     /**
      * 获取房间所有成员姓名
@@ -127,13 +114,6 @@ public class Room implements Closeable {
         return participants.values();
     }
 
-
-    /**
-     * 获取某一位成员的UserSession
-     */
-    public UserSession getUserSession(String userName) {
-        return participants.get(userName);
-    }
 
 
     public String getName() {

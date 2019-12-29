@@ -9,6 +9,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import org.kurento.client.IceCandidate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -21,6 +23,7 @@ import java.util.Map;
 
 public class CallHandler extends TextWebSocketHandler {
 
+    private static final Logger log = LoggerFactory.getLogger(CallHandler.class);
     private static final Gson gson = new GsonBuilder().create();
 
     @Autowired
@@ -72,15 +75,20 @@ public class CallHandler extends TextWebSocketHandler {
     }
 
 
-    private void joinRoom(WebSocketSession session) throws IOException {
+    private void joinRoom(WebSocketSession session) {
         final Map<String, Object> attributes = session.getAttributes();
         final UserInfo userInfo = (UserInfo) attributes.get("UserInfo");
         final String userName = userInfo.getUserName();
         final String roomName = userInfo.getUserRoom();
 
         Room room = roomManager.getRoom(roomName);
-        final UserSession user = room.join(userName, session);
-        registry.register(user);
+        try {
+            final UserSession user = room.join(userName, session);
+            registry.register(user);
+        } catch (IOException e) {
+            log.error("用户加入房间异常");
+            log.error(e.toString());
+        }
     }
 
 
