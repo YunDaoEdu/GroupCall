@@ -54,7 +54,7 @@ function Participant(name) {
 
         let msg = {
             id: "receiveVideoFrom",
-            sender: name,
+            videoSender: name,
             sdpOffer: offerSdp
         };
         $.fn.sendMessage(msg);

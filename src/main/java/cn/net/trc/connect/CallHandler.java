@@ -42,7 +42,10 @@ public class CallHandler extends TextWebSocketHandler {
                 break;
             case "receiveVideoFrom":
                 final String sdpOffer = jsonMessage.get("sdpOffer").getAsString();
-                user.receiveVideoFrom(user, sdpOffer);
+                final String videoSenderName = jsonMessage.get("videoSender").getAsString();
+                final UserSession targetUser = registry.getByName(videoSenderName);
+
+                user.receiveVideoFrom(targetUser, sdpOffer);
                 break;
             case "leaveRoom":
                 leaveRoom(user);
@@ -51,11 +54,9 @@ public class CallHandler extends TextWebSocketHandler {
                 JsonObject candidate = jsonMessage.get("candidate").getAsJsonObject();
 
                 if (user != null) {
-                    final String userName = user.getName();
-
                     IceCandidate cand = new IceCandidate(candidate.get("candidate").getAsString(),
                             candidate.get("sdpMid").getAsString(), candidate.get("sdpMLineIndex").getAsInt());
-                    user.addCandidate(cand, userName);
+                    user.addCandidate(cand, jsonMessage.get("name").getAsString());
                 }
                 break;
             default:

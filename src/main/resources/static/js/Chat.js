@@ -174,11 +174,11 @@
 
 
     function sendMessage(message) {
+        console.log("发送信息: " + message.id);
+
         let jsonMessage = JSON.stringify(message);
-        console.log('Sending message: ' + jsonMessage);
         ws.send(jsonMessage);
     }
-
     $.fn.sendMessage = sendMessage;
 
 
